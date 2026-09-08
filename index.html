@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071019">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SPX Dashboard">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>SPX Macro Dashboard V4</title>
+<style>
+:root{
+  --bg:#071019;--panel:#0d1722;--panel2:#111e2a;--line:#223142;
+  --text:#edf5ff;--muted:#94a8bc;--accent:#55c2ff;--good:#37d39a;
+  --bad:#ff667a;--warn:#ffc857
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+a{color:inherit}
+.shell{max-width:1500px;margin:auto;padding:12px;padding-top:max(12px,env(safe-area-inset-top));padding-bottom:max(20px,env(safe-area-inset-bottom))}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}
+h1{font-size:21px;margin:0 0 5px}
+.sub{font-size:12px;color:var(--muted);line-height:1.45;max-width:900px}
+.badge{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:8px 10px;background:var(--panel)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.panel h2{font-size:14px;margin:0;padding:12px 14px;border-bottom:1px solid var(--line)}
+.section{margin-bottom:12px}
+.sourceGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.src{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px;min-width:0}
+.srcTop{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.sym{font-weight:800;font-size:18px}
+.desc{font-size:11px;color:var(--muted);margin-top:2px}
+.status{font-size:10px;border-radius:999px;padding:4px 6px;border:1px solid var(--line);white-space:nowrap}
+.rt{color:var(--good)} .delay{color:var(--warn)} .proxy{color:var(--accent)}
+.src a,.openBtn{display:block;text-decoration:none;text-align:center;margin-top:10px;border:1px solid var(--line);background:var(--panel2);border-radius:9px;padding:9px;min-height:42px;font-size:13px;font-weight:650}
+.src a:active,.openBtn:active{transform:scale(.99)}
+.grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(360px,.75fr);gap:12px}
+.embed{width:100%;border:0;background:#fff;display:block}
+#summaryFrame{height:410px}
+#calendarFrame{height:560px}
+.controls{padding:10px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+button{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:9px;padding:10px 12px;min-height:44px;font-size:13px}
+button.active{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+#tv_chart{height:560px}
+.note{font-size:11px;color:var(--muted);line-height:1.5;padding:10px 12px;border-top:1px solid var(--line)}
+.biasHeader{padding:12px}
+.biasLine{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.biasText{font-size:26px;font-weight:850}
+.scorePill{font-size:18px;font-weight:800;border:1px solid var(--line);border-radius:999px;padding:8px 12px;background:#09131c}
+.meter{height:10px;border:1px solid var(--line);background:#09131c;border-radius:999px;overflow:hidden;margin-top:10px}
+.fill{height:100%;width:50%;background:linear-gradient(90deg,var(--bad),var(--warn),var(--good))}
+.checklist{padding:8px 12px}
+.check{display:grid;grid-template-columns:auto 1fr;gap:9px;padding:9px 0;border-bottom:1px solid #172534;align-items:start}
+.check input{width:22px;height:22px;margin:0}
+.check span{font-size:13px}
+.scoreRow{display:flex;justify-content:space-between;padding:10px 0;font-weight:700}
+.fields{padding:12px}
+.fieldGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+label{font-size:11px;color:var(--muted);display:block;margin-bottom:4px}
+input{width:100%;min-height:44px;border:1px solid var(--line);border-radius:8px;background:#0a141e;color:var(--text);padding:9px;font-size:16px}
+.playbook{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.sc{border:1px solid var(--line);border-radius:10px;background:var(--panel2);padding:10px}
+.sc b{display:block;margin-bottom:4px}
+.sc small{color:var(--muted);line-height:1.45}
+.bull b{color:var(--good)}.bear b{color:var(--bad)}.chop b{color:var(--warn)}
+.manual{padding:12px}
+.manualGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.manual small{display:block;color:var(--muted);margin-top:5px}
+.footer{font-size:11px;color:var(--muted);line-height:1.5;margin-top:12px}
+@media(max-width:1050px){.sourceGrid{grid-template-columns:repeat(3,1fr)}.grid{grid-template-columns:1fr}}
+@media(max-width:700px){.sourceGrid{grid-template-columns:repeat(2,1fr)}.playbook{grid-template-columns:1fr}.manualGrid,.fieldGrid{grid-template-columns:1fr}#tv_chart{height:500px}#summaryFrame{height:450px}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="top">
+    <div>
+      <h1>SPX Macro & 0DTE Dashboard — V4</h1>
+      <div class="sub">Hybrid source design: Investing.com for macro/index/commodity references, TradingView only for SPY/QQQ because those embeds work, and explicit delay labels for exchange futures.</div>
+    </div>
+    <div class="badge">Built for iPhone / GitHub Pages</div>
+  </div>
+
+  <section class="section sourceGrid">
+    <div class="src"><div class="srcTop"><div><div class="sym">SPX</div><div class="desc">S&P 500 cash index</div></div><span class="status proxy">Derived</span></div><a target="_blank" rel="noopener" href="https://www.investing.com/indices/us-spx-500">Open live SPX</a></div>
+    <div class="src"><div class="srcTop"><div><div class="sym">ES</div><div class="desc">E-mini S&P futures</div></div><span class="status delay">Delayed</span></div><a target="_blank" rel="noopener" href="https://www.investing.com/indices/us-spx-500-futures">Open /ES</a></div>
+    <div class="src"><div class="srcTop"><div><div class="sym">NQ</div><div class="desc">E-mini Nasdaq futures</div></div><span class="status delay">Delayed</span></div><a target="_blank" rel="noopener" href="https://www.investing.com/indices/nq-100-futures">Open /NQ</a></div>
+    <div class="src"><div class="srcTop"><div><div class="sym">VIX</div><div class="desc">S&P 500 volatility index</div></div><span class="status proxy">Reference</span></div><a target="_blank" rel="noopener" href="https://www.investing.com/indices/volatility-s-p-500">Open VIX</a></div>
+
+    <div class="src"><div class="srcTop"><div><div class="sym">10Y</div><div class="desc">U.S. 10-year yield</div></div><span class="status rt">Real-time*</span></div><a target="_blank" rel="noopener" href="https://www.investing.com/rates-bonds/u.s.-10-year-bond-yield">Open 10Y</a></div>
+    <div class="src"><div class="srcTop"><div><div class="sym">2Y</div><div class="desc">U.S. 2-year yield</div></div><span class="status rt">Real-time*</span></div><a target="_blank" rel="noopener" href="https://www.investing.com/rates-bonds/u.s.-2-year-bond-yield">Open 2Y</a></div>
+    <div class="src"><div class="srcTop"><div><div class="sym">ZN</div><div class="desc">10Y T-Note futures</div></div><span class="status delay">Delayed</span></div><a target="_blank" rel="noopener" href="https://www.investing.com/rates-bonds/us-10-yr-t-note">Open ZN</a></div>
+    <div class="src"><div class="srcTop"><div><div class="sym">DXY</div><div class="desc">U.S. Dollar Index</div></div><span class="status rt">Real-time*</span></div><a target="_blank" rel="noopener" href="https://www.investing.com/indices/usdollar">Open DXY</a></div>
+
+    <div class="src"><div class="srcTop"><div><div class="sym">WTI</div><div class="desc">Crude oil derived quote</div></div><span class="status rt">Real-time*</span></div><a target="_blank" rel="noopener" href="https://www.investing.com/commodities/crude-oil">Open WTI</a></div>
+    <div class="src"><div class="srcTop"><div><div class="sym">Brent</div><div class="desc">Brent derived quote</div></div><span class="status rt">Real-time*</span></div><a target="_blank" rel="noopener" href="https://www.investing.com/commodities/brent-oil">Open Brent</a></div>
+    <div class="src"><div class="srcTop"><div><div class="sym">SPY</div><div class="desc">Cash-session proxy</div></div><span class="status rt">Working embed</span></div><a href="#spyqqq">Jump to chart</a></div>
+    <div class="src"><div class="srcTop"><div><div class="sym">QQQ</div><div class="desc">Nasdaq ETF proxy</div></div><span class="status rt">Working embed</span></div><a href="#spyqqq">Jump to chart</a></div>
+  </section>
+
+  <div class="grid">
+    <main>
+      <section class="panel section">
+        <h2>Investing.com Technical Summary — SPX / WTI / Brent / DXY</h2>
+        <div class="controls"><button id="reloadSummary" type="button">Refresh panel</button></div>
+        <iframe id="summaryFrame" class="embed" title="Investing.com technical summary"
+          src="https://ssltools.investing.com/technical_summary.php?pairs=166,8849,8833,8827&force_lang=1"
+          loading="lazy"></iframe>
+        <div class="note">Official Investing.com embed. If this particular provider panel is blocked by a browser/privacy setting, use the one-tap live-source cards above.</div>
+      </section>
+
+      <section id="spyqqq" class="panel section">
+        <h2 id="chartTitle">SPY / QQQ 5-minute chart</h2>
+        <div class="controls">
+          <button type="button" class="chartBtn active" data-sym="AMEX:SPY" data-name="SPY">SPY</button>
+          <button type="button" class="chartBtn" data-sym="NASDAQ:QQQ" data-name="QQQ">QQQ</button>
+        </div>
+        <div id="tv_chart"></div>
+        <div class="note">TradingView is used only for SPY and QQQ because you confirmed those symbols work in the embed. No blocked SPX/futures/rates symbols are requested here.</div>
+      </section>
+
+      <section class="panel section">
+        <h2>U.S. Economic Calendar</h2>
+        <div class="controls"><button id="reloadCal" type="button">Refresh calendar</button></div>
+        <iframe id="calendarFrame" class="embed" title="Investing.com economic calendar"
+          src="https://sslecal2.investing.com/" loading="lazy"></iframe>
+        <div class="note">Investing.com’s official economic-calendar embed updates as events are released. Verify high-impact releases against your broker/news terminal before placing 0DTE orders.</div>
+      </section>
+    </main>
+
+    <aside>
+      <section class="panel section">
+        <h2>0DTE Cross-Asset Bias Engine</h2>
+        <div class="biasHeader">
+          <div class="biasLine"><div id="biasText" class="biasText">Neutral / Chop</div><div id="scorePill" class="scorePill">50 / 50</div></div>
+          <div class="meter"><div id="fill" class="fill"></div></div>
+        </div>
+        <div class="checklist">
+          <label class="check"><input id="b1" type="checkbox" data-side="bull" data-w="2"><span>10Y falling / ZN rising</span></label>
+          <label class="check"><input id="b2" type="checkbox" data-side="bull" data-w="2"><span>QQQ/NQ showing relative strength</span></label>
+          <label class="check"><input id="b3" type="checkbox" data-side="bull" data-w="1"><span>VIX falling</span></label>
+          <label class="check"><input id="b4" type="checkbox" data-side="bull" data-w="1"><span>WTI/Brent stable or falling</span></label>
+          <label class="check"><input id="b5" type="checkbox" data-side="bull" data-w="1"><span>SPX/SPY above opening range / pivot</span></label>
+
+          <label class="check"><input id="s1c" type="checkbox" data-side="bear" data-w="2"><span>10Y rising / ZN falling</span></label>
+          <label class="check"><input id="s2c" type="checkbox" data-side="bear" data-w="2"><span>QQQ/NQ underperforming</span></label>
+          <label class="check"><input id="s3c" type="checkbox" data-side="bear" data-w="1"><span>VIX rising</span></label>
+          <label class="check"><input id="s4c" type="checkbox" data-side="bear" data-w="1"><span>WTI/Brent accelerating higher</span></label>
+          <label class="check"><input id="s5c" type="checkbox" data-side="bear" data-w="1"><span>SPX/SPY below opening range / support</span></label>
+
+          <div class="scoreRow"><span id="bullScore">Bull 0</span><span id="bearScore">Bear 0</span></div>
+        </div>
+      </section>
+
+      <section class="panel section">
+        <h2>Quick Live Inputs</h2>
+        <div class="manual">
+          <div class="manualGrid">
+            <div><label>10Y yield</label><input id="m10y" placeholder="e.g. 4.79"><small>Copy from live 10Y source</small></div>
+            <div><label>VIX</label><input id="mvix" placeholder="e.g. 15.3"><small>Copy from live VIX source</small></div>
+            <div><label>WTI</label><input id="moil" placeholder="e.g. 92.3"><small>Copy from live WTI source</small></div>
+          </div>
+          <div class="note" style="padding-left:0;padding-right:0;border-top:0">These values save locally on your phone. They are optional; they are here because browser embedding/licensing restrictions can prevent a free public dashboard from legally streaming every exchange instrument.</div>
+        </div>
+      </section>
+
+      <section class="panel section">
+        <h2>SPX Price Map — editable</h2>
+        <div class="fields">
+          <div class="fieldGrid">
+            <div><label>Major resistance</label><input id="r1" value="7800"></div>
+            <div><label>Breakout confirmation</label><input id="r2" value="7750"></div>
+            <div><label>Primary pivot</label><input id="pivot" value="7700"></div>
+            <div><label>Breakdown confirmation</label><input id="d1" value="7650"></div>
+            <div><label>Major support</label><input id="d2" value="7600"></div>
+            <div><label>Secondary downside</label><input id="d3" value="7575"></div>
+          </div>
+          <div class="playbook">
+            <div class="sc bull"><b>Bullish</b><small id="bullText"></small></div>
+            <div class="sc bear"><b>Bearish</b><small id="bearText"></small></div>
+            <div class="sc chop"><b>Chop</b><small id="chopText"></small></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel section">
+        <h2>0DTE Risk Controls</h2>
+        <div class="fields">
+          <div class="fieldGrid">
+            <div><label>Position cost ($)</label><input id="cost" type="number" value="1000" min="0" step="50"></div>
+            <div><label>Max planned loss ($)</label><input id="maxLoss" type="number" value="500" min="0" step="50"></div>
+            <div><label>Scale profit 1 (%)</label><input id="p1" type="number" value="25" min="0" step="5"></div>
+            <div><label>Scale profit 2 (%)</label><input id="p2" type="number" value="50" min="0" step="5"></div>
+          </div>
+          <div class="sc chop" style="margin-top:10px"><b>Risk summary</b><small id="riskText"></small></div>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <div class="footer">
+    *“Real-time” labels refer to the provider’s own displayed status for derived/reference data. Exchange-traded ES, NQ and ZN quotes on free public pages may be delayed because of exchange licensing. Investing.com also states that website data can be indicative and may differ from executable market prices. For an actual SPX/0DTE entry, use your broker’s executable quote and define invalidation before entering.
+  </div>
+</div>
+
+<script src="https://s3.tradingview.com/tv.js"></script>
+<script>
+(function(){
+  const STORE="spx-v4";
+  function save(){
+    try{
+      const s={};
+      document.querySelectorAll('input').forEach(x=>{s[x.id]=x.type==="checkbox"?x.checked:x.value});
+      localStorage.setItem(STORE,JSON.stringify(s));
+    }catch(e){}
+  }
+  function restore(){
+    try{
+      const raw=localStorage.getItem(STORE); if(!raw)return;
+      const s=JSON.parse(raw);
+      document.querySelectorAll('input').forEach(x=>{
+        if(s[x.id]===undefined)return;
+        if(x.type==="checkbox")x.checked=!!s[x.id]; else x.value=s[x.id];
+      });
+    }catch(e){}
+  }
+
+  function score(){
+    let bull=0,bear=0;
+    document.querySelectorAll('.check input').forEach(c=>{
+      if(c.checked){
+        const w=Number(c.dataset.w||1);
+        if(c.dataset.side==="bull")bull+=w;else bear+=w;
+      }
+    });
+    const t=bull+bear;
+    const bp=t?Math.round(100*bull/t):50;
+    const br=100-bp;
+    document.getElementById("bullScore").textContent="Bull "+bull;
+    document.getElementById("bearScore").textContent="Bear "+bear;
+    document.getElementById("scorePill").textContent=bp+" / "+br;
+    document.getElementById("fill").style.width=bp+"%";
+    document.getElementById("biasText").textContent=bp>=65?"Bullish":bp<=35?"Bearish":"Neutral / Chop";
+    save();
+  }
+
+  function playbook(){
+    const v=id=>document.getElementById(id).value.trim();
+    document.getElementById("bullText").textContent="Higher quality above "+v("r2")+" with 10Y ↓, QQQ/NQ strength and VIX ↓. Next resistance "+v("r1")+".";
+    document.getElementById("bearText").textContent="Higher quality below "+v("d1")+" with 10Y ↑, QQQ/NQ weakness and VIX ↑. Downside "+v("d2")+" then "+v("d3")+".";
+    document.getElementById("chopText").textContent="Repeated crossings near "+v("pivot")+" without cross-asset confirmation = lower-quality long-premium conditions.";
+    save();
+  }
+
+  function risk(){
+    const cost=Math.max(0,Number(document.getElementById("cost").value)||0);
+    const loss=Math.max(0,Number(document.getElementById("maxLoss").value)||0);
+    const p1=Math.max(0,Number(document.getElementById("p1").value)||0);
+    const p2=Math.max(0,Number(document.getElementById("p2").value)||0);
+    const pct=cost?Math.round(loss/cost*100):0;
+    document.getElementById("riskText").textContent=(cost?"Planned max loss = "+pct+"% of position cost. ":"Enter a position cost. ")+"Consider partials around +"+p1+"% and +"+p2+"% only if price reaches your technical targets. Do not average down a broken 0DTE thesis.";
+    save();
+  }
+
+  function draw(sym,name){
+    const host=document.getElementById("tv_chart");host.innerHTML="";
+    if(!window.TradingView){host.innerHTML='<div class="note">Chart provider is still loading.</div>';return}
+    new TradingView.widget({
+      autosize:true,symbol:sym,interval:"5",timezone:"America/New_York",
+      theme:"dark",style:"1",locale:"en",enable_publishing:false,
+      allow_symbol_change:false,hide_side_toolbar:false,container_id:"tv_chart",
+      withdateranges:true,details:true,studies:["STD;VWAP"]
+    });
+    document.querySelectorAll(".chartBtn").forEach(b=>b.classList.toggle("active",b.dataset.sym===sym));
+    document.getElementById("chartTitle").textContent=name+" 5-minute chart";
+  }
+
+  restore();
+  document.querySelectorAll('.check input').forEach(x=>x.addEventListener("change",score));
+  ["r1","r2","pivot","d1","d2","d3"].forEach(id=>document.getElementById(id).addEventListener("input",playbook));
+  ["cost","maxLoss","p1","p2"].forEach(id=>document.getElementById(id).addEventListener("input",risk));
+  ["m10y","mvix","moil"].forEach(id=>document.getElementById(id).addEventListener("input",save));
+  document.querySelectorAll(".chartBtn").forEach(b=>b.addEventListener("click",()=>draw(b.dataset.sym,b.dataset.name)));
+  document.getElementById("reloadSummary").addEventListener("click",()=>{
+    const f=document.getElementById("summaryFrame"); f.src=f.src;
+  });
+  document.getElementById("reloadCal").addEventListener("click",()=>{
+    const f=document.getElementById("calendarFrame"); f.src=f.src;
+  });
+
+  score();playbook();risk();
+  setTimeout(()=>draw("AMEX:SPY","SPY"),350);
+
+  if("serviceWorker" in navigator){
+    window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+  }
+})();
+</script>
+</body>
+</html>
