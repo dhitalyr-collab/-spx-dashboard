@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="SPX Dashboard" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <title>SPX 0DTE Dashboard V3</title>
+  <title>SPX 0DTE Dashboard V3.1</title>
   <style>
     :root{
       --bg:#071019; --panel:#0d1722; --panel2:#111e2a; --line:#223142;
@@ -75,8 +75,8 @@
 <div class="shell">
   <div class="top">
     <div>
-      <h1>SPX Macro & 0DTE Dashboard — V3</h1>
-      <div class="sub">One-screen cross-asset monitor for SPX, SPY, QQQ, /ES, /NQ, VIX, rates, oil, DXY, levels and the U.S. economic calendar.</div>
+      <h1>SPX Macro & 0DTE Dashboard — V3.1</h1>
+      <div class="sub">One-screen cross-asset monitor for SPY (SPX proxy), QQQ, /ES, /NQ, VIX, rates, oil, DXY, levels and the U.S. economic calendar.</div>
     </div>
     <div class="badge">TradingView-powered • optimized for iPhone Home Screen</div>
   </div>
@@ -96,7 +96,7 @@
 
   <div class="panel ticker">
     <tv-ticker-tape
-      symbols="SP:SPX,AMEX:SPY,NASDAQ:QQQ,CME_MINI:ES1!,CME_MINI:NQ1!,CBOE:VIX,TVC:US10Y,TVC:US02Y,CBOT:ZN1!,NYMEX:CL1!,TVC:UKOIL,TVC:DXY"
+      symbols="AMEX:SPY,NASDAQ:QQQ,CME_MINI:ES1!,CME_MINI:NQ1!,CBOE:VIX,TVC:US10Y,TVC:US02Y,CBOT:ZN1!,NYMEX:CL1!,TVC:UKOIL,TVC:DXY"
       item-size="compact"
       direction="horizontal">
     </tv-ticker-tape>
@@ -104,10 +104,11 @@
 
   <div class="grid">
     <section class="panel">
-      <h2 id="chartTitle">Main chart — SPX</h2>
+      <h2 id="chartTitle">Main chart — SPY</h2>
       <div class="buttons" id="symbolButtons"></div>
+      <div class="statusLine"><b>SPX chart note:</b> TradingView restricts the cash SPX index in some embedded charts. Use <b>SPY</b> for the cash-session proxy and <b>/ES</b> for S&amp;P 500 futures. Your editable support/resistance levels can still remain SPX levels.</div>
       <div id="tv_chart"></div>
-      <div class="statusLine">During macro releases, switch between SPX → 10Y → NQ → VIX → WTI. Main chart defaults to 5-minute candles with VWAP.</div>
+      <div class="statusLine">During macro releases, switch between SPY → /ES → 10Y → NQ → VIX → WTI. Main chart defaults to 5-minute candles with VWAP.</div>
     </section>
 
     <aside class="side">
@@ -186,7 +187,7 @@
 (function(){
   const STORE="spx-dashboard-v3";
   const symbols=[
-    ["SPX","SP:SPX"],["SPY","AMEX:SPY"],["QQQ","NASDAQ:QQQ"],
+    ["SPY","AMEX:SPY"],["QQQ","NASDAQ:QQQ"],
     ["/ES","CME_MINI:ES1!"],["/NQ","CME_MINI:NQ1!"],["VIX","CBOE:VIX"],
     ["10Y","TVC:US10Y"],["2Y","TVC:US02Y"],["ZN","CBOT:ZN1!"],
     ["WTI","NYMEX:CL1!"],["Brent","TVC:UKOIL"],["DXY","TVC:DXY"]
@@ -291,7 +292,7 @@
   ["maxLoss","cost","p1","p2"].forEach(id=>document.getElementById(id).addEventListener("input",updateRisk));
 
   restore(); score(); updatePlaybook(); updateRisk();
-  drawChart("SP:SPX","SPX");
+  drawChart("AMEX:SPY","SPY");
 
   if("serviceWorker" in navigator){
     window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
